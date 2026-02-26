@@ -8,20 +8,20 @@ import (
 
 func TestLoad(t *testing.T) {
 	// Set required env vars
-	os.Setenv("GROQ_UNLI_API_KEY", "test-key")
-	os.Setenv("GROQ_KEYS", "key1,key2,key3")
+	os.Setenv("FAST_UNLI_API_KEY", "test-client-key")
+	os.Setenv("CEREBRAS_KEYS", "key1,key2,key3")
 	
 	cfg, err := Load()
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
 	
-	if cfg.GroqUnliAPIKey != "test-key" {
-		t.Errorf("GroqUnliAPIKey = %v, want test-key", cfg.GroqUnliAPIKey)
+	if cfg.FastUnliAPIKey != "test-client-key" {
+		t.Errorf("FastUnliAPIKey = %v, want test-client-key", cfg.FastUnliAPIKey)
 	}
 	
-	if len(cfg.GroqKeys) != 3 {
-		t.Errorf("len(GroqKeys) = %v, want 3", len(cfg.GroqKeys))
+	if len(cfg.CerebrasKeys) != 3 {
+		t.Errorf("len(CerebrasKeys) = %v, want 3", len(cfg.CerebrasKeys))
 	}
 	
 	// Check defaults
@@ -32,11 +32,15 @@ func TestLoad(t *testing.T) {
 	if cfg.MaxRetryTimeout != 3*time.Minute {
 		t.Errorf("MaxRetryTimeout = %v, want 3m", cfg.MaxRetryTimeout)
 	}
+	
+	if cfg.ProviderBaseURL != "https://api.cerebras.ai/v1" {
+		t.Errorf("ProviderBaseURL = %v, want cerebras default", cfg.ProviderBaseURL)
+	}
 }
 
 func TestLoad_MissingRequired(t *testing.T) {
-	os.Unsetenv("GROQ_UNLI_API_KEY")
-	os.Unsetenv("GROQ_KEYS")
+	os.Unsetenv("FAST_UNLI_API_KEY")
+	os.Unsetenv("CEREBRAS_KEYS")
 	
 	_, err := Load()
 	if err == nil {

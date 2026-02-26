@@ -8,25 +8,26 @@ import (
 )
 
 type Config struct {
-	GroqUnliAPIKey  string
-	GroqKeys        []string
+	FastUnliAPIKey  string
+	CerebrasKeys    []string
 	AdminAPIKey     string
 	Port            string
 	DBPath          string
 	MaxRetryTimeout time.Duration
 	CooldownMinutes int
 	SickMinutes     int
+	ProviderBaseURL string
 }
 
 func Load() (*Config, error) {
-	apiKey := os.Getenv("GROQ_UNLI_API_KEY")
+	apiKey := os.Getenv("FAST_UNLI_API_KEY")
 	if apiKey == "" {
-		return nil, fmt.Errorf("GROQ_UNLI_API_KEY is required")
+		return nil, fmt.Errorf("FAST_UNLI_API_KEY is required")
 	}
 	
-	keysStr := os.Getenv("GROQ_KEYS")
+	keysStr := os.Getenv("CEREBRAS_KEYS")
 	if keysStr == "" {
-		return nil, fmt.Errorf("GROQ_KEYS is required")
+		return nil, fmt.Errorf("CEREBRAS_KEYS is required")
 	}
 	
 	keys := strings.Split(keysStr, ",")
@@ -35,14 +36,15 @@ func Load() (*Config, error) {
 	}
 	
 	cfg := &Config{
-		GroqUnliAPIKey:  apiKey,
-		GroqKeys:        keys,
+		FastUnliAPIKey:  apiKey,
+		CerebrasKeys:    keys,
 		AdminAPIKey:     os.Getenv("ADMIN_API_KEY"),
 		Port:            getEnvDefault("PORT", "8080"),
-		DBPath:          getEnvDefault("DB_PATH", "./groq_unli.db"),
+		DBPath:          getEnvDefault("DB_PATH", "./fast_unli.db"),
 		MaxRetryTimeout: getDurationDefault("MAX_RETRY_TIMEOUT", 3*time.Minute),
 		CooldownMinutes: getIntDefault("COOLDOWN_MINUTES", 10),
 		SickMinutes:     getIntDefault("SICK_MINUTES", 30),
+		ProviderBaseURL: getEnvDefault("PROVIDER_BASE_URL", "https://api.cerebras.ai/v1"),
 	}
 	
 	return cfg, nil
