@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"groq-unli/internal/keypool"
-	"groq-unli/internal/provider"
-	"groq-unli/internal/server"
-	"groq-unli/internal/store"
+	"fast-unli/internal/keypool"
+	"fast-unli/internal/provider"
+	"fast-unli/internal/server"
+	"fast-unli/internal/store"
 )
 
 func TestIntegration_EndToEnd(t *testing.T) {
