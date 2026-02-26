@@ -1,0 +1,103 @@
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"groq-unli/internal/config"
+	"groq-unli/internal/keypool"
+	"groq-unli/internal/provider"
+	"groq-unli/internal/server"
+	"groq-unli/internal/store"
+)
+
+func main() {
+	// Load config
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Open database
+	db, err := store.New(cfg.DBPath)
+	if err != nil {
+		log.Fatalf("Failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	// Add bootstrap keys from env
+	for _, keyValue := range cfg.CerebrasKeys {
+		key := &store.Key{
+			Provider: "cerebras",
+			KeyValue: keyValue,
+			Status:   store.StatusHealthy,
+		}
+		if _, err := db.AddKey(key); err != nil {
+			log.Printf("Warning: failed to add bootstrap key: %v", err)
+		}
+	}
+
+	// Create key pool
+	pool := keypool.New(db, "cerebras", cfg.CooldownMinutes, cfg.SickMinutes)
+	if err := pool.RefreshKeys(); err != nil {
+		log.Fatalf("Failed to load keys: %v", err)
+	}
+
+	// Create provider client
+	prov := provider.New(cfg.ProviderBaseURL, cfg.MaxRetryTimeout)
+
+	// Create server
+	srv := server.New(&server.Config{
+		APIKey:      cfg.FastUnliAPIKey,
+		AdminAPIKey: cfg.AdminAPIKey,
+		Pool:        pool,
+		Provider:    prov,
+	})
+
+	// Start background key refresh
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := pool.RefreshKeys(); err != nil {
+				log.Printf("Failed to refresh keys: %v", err)
+			}
+		}
+	}()
+
+	// Setup graceful shutdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	// Start server
+	httpServer := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: srv,
+	}
+
+	go func() {
+		log.Printf("Server starting on :%s", cfg.Port)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for shutdown signal
+	<-stop
+	log.Println("Shutting down...")
+
+	// Graceful shutdown
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Shutdown error: %v", err)
+	}
+
+	log.Println("Server stopped")
+}
