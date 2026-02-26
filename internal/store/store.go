@@ -2,11 +2,14 @@ package store
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 	
 	_ "modernc.org/sqlite"
 )
+
+var ErrNoHealthyKeys = errors.New("no healthy API keys available")
 
 type KeyStatus string
 
