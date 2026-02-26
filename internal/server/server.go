@@ -17,6 +17,7 @@ type KeyPool interface {
 	ReportFailure(keyID int64, statusCode int)
 	RefreshKeys() error
 	HealthyCount() int
+	EnableKey(keyID int64) error
 }
 
 type ProviderClient interface {
@@ -24,11 +25,21 @@ type ProviderClient interface {
 	DoRequestWithMethod(apiKey, method, path string, body []byte) (*http.Response, error)
 }
 
+type StoreInterface interface {
+	GetAllKeys() ([]*store.Key, error)
+	GetKeysByProvider(provider string) ([]*store.Key, error)
+	AddKey(key *store.Key) (int64, error)
+	DeleteKey(id int64) error
+	GetKeyByID(id int64) (*store.Key, error)
+	UpdateKeyStatus(id int64, status store.KeyStatus, failCount int, cooldownUntil time.Time) error
+}
+
 type Config struct {
 	APIKey      string
 	AdminAPIKey string
 	Pool        KeyPool
 	Provider    ProviderClient
+	Store       StoreInterface
 }
 
 type Server struct {

@@ -57,6 +57,7 @@ func main() {
 		AdminAPIKey: cfg.AdminAPIKey,
 		Pool:        pool,
 		Provider:    prov,
+		Store:       db,
 	})
 
 	// Start background key refresh

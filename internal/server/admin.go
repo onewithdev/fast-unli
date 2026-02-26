@@ -4,17 +4,36 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"groq-unli/internal/store"
 )
 
 func (s *Server) handleListKeys(w http.ResponseWriter, r *http.Request) {
-	// Simplified version for now - will be wired to store in Task 7
+	keys, err := s.cfg.Store.GetAllKeys()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Database error")
+		return
+	}
+
+	var masked []map[string]interface{}
+	for _, k := range keys {
+		masked = append(masked, map[string]interface{}{
+			"id":             k.ID,
+			"provider":       k.Provider,
+			"status":         k.Status,
+			"masked_key":     maskKey(k.KeyValue),
+			"fail_count":     k.FailCount,
+			"total_requests": k.TotalRequests,
+			"total_failures": k.TotalFailures,
+			"created_at":     k.CreatedAt,
+		})
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"keys": []map[string]interface{}{
-			{"id": 1, "status": "healthy", "masked": "***"},
-		},
+		"keys": masked,
 	})
 }
 
@@ -38,10 +57,25 @@ func (s *Server) handleAddKey(w http.ResponseWriter, r *http.Request) {
 		req.Provider = "cerebras"
 	}
 
-	// Would add to store here
+	key := &store.Key{
+		Provider: req.Provider,
+		KeyValue: req.Key,
+		Status:   store.StatusHealthy,
+	}
+
+	id, err := s.cfg.Store.AddKey(key)
+	if err != nil {
+		writeError(w, http.StatusConflict, "Key already exists or database error")
+		return
+	}
+
+	// Refresh pool
+	s.cfg.Pool.RefreshKeys()
+
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":       1,
+		"id":       id,
 		"provider": req.Provider,
 		"status":   "healthy",
 	})
@@ -55,7 +89,13 @@ func (s *Server) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = id // Would delete from store
+	if err := s.cfg.Store.DeleteKey(id); err != nil {
+		writeError(w, http.StatusInternalServerError, "Database error")
+		return
+	}
+
+	// Refresh pool
+	s.cfg.Pool.RefreshKeys()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -68,7 +108,13 @@ func (s *Server) handleEnableKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = id // Would enable in pool
+	if err := s.cfg.Store.UpdateKeyStatus(id, store.StatusHealthy, 0, time.Time{}); err != nil {
+		writeError(w, http.StatusInternalServerError, "Database error")
+		return
+	}
+
+	// Refresh pool
+	s.cfg.Pool.RefreshKeys()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{

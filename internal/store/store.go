@@ -231,6 +231,41 @@ func (s *Store) DeleteKey(id int64) error {
 	return nil
 }
 
+func (s *Store) GetKeyByID(id int64) (*Key, error) {
+	row := s.db.QueryRow(`
+		SELECT id, provider, key_value, status, fail_count, last_used_at, last_failed_at, 
+		       cooldown_until, total_requests, total_failures, created_at
+		FROM api_keys WHERE id = ?
+	`, id)
+	
+	k := &Key{}
+	var lastUsed, lastFailed, cooldown sql.NullTime
+	
+	err := row.Scan(
+		&k.ID, &k.Provider, &k.KeyValue, &k.Status, &k.FailCount,
+		&lastUsed, &lastFailed, &cooldown,
+		&k.TotalRequests, &k.TotalFailures, &k.CreatedAt,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("get key by id: %w", err)
+	}
+	
+	if lastUsed.Valid {
+		k.LastUsedAt = &lastUsed.Time
+	}
+	if lastFailed.Valid {
+		k.LastFailedAt = &lastFailed.Time
+	}
+	if cooldown.Valid {
+		k.CooldownUntil = &cooldown.Time
+	}
+	
+	return k, nil
+}
+
 func (s *Store) scanKeys(rows *sql.Rows) ([]*Key, error) {
 	var keys []*Key
 	for rows.Next() {

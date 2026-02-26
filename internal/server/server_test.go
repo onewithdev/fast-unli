@@ -31,6 +31,8 @@ func (m *mockPool) RefreshKeys() error { return nil }
 
 func (m *mockPool) HealthyCount() int { return len(m.keys) }
 
+func (m *mockPool) EnableKey(keyID int64) error { return nil }
+
 func TestServer_Health(t *testing.T) {
 	pool := &mockPool{keys: []*store.Key{{ID: 1, KeyValue: "test"}}}
 	srv := New(&Config{
