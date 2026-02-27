@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+buildCommand = "go mod download && go build -o out ./cmd/server"
+
+[deploy]
+startCommand = "./out"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
