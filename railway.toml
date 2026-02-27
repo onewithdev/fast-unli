@@ -3,6 +3,6 @@ builder = "nixpacks"
 buildCommand = "go clean -modcache && go mod download && go build -o out ./cmd/server"
 
 [deploy]
-startCommand = "./out"
+startCommand = "echo '=== Environment Debug ===' && env | grep -E 'FAST|CEREBRAS|ADMIN|PORT' | sed 's/=.*$/=***REDACTED***/' && echo '=== Starting Server ===' && ./out"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
