@@ -69,8 +69,10 @@ func main() {
 	if err := pool.RefreshKeys(); err != nil {
 		log.Fatalf("Failed to load keys: %v", err)
 	}
+	log.Printf("Key pool initialized with %d healthy keys", pool.HealthyCount())
 
 	// Create provider client
+	log.Printf("Provider Base URL: %s", cfg.ProviderBaseURL)
 	prov := provider.New(cfg.ProviderBaseURL, cfg.MaxRetryTimeout)
 
 	// Create server

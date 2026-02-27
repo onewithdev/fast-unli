@@ -2,6 +2,7 @@ package server
 
 import (
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -28,8 +29,10 @@ func (s *Server) handleChatCompletions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Make request to provider
+	log.Printf("Making request to provider with key ID %d", key.ID)
 	resp, err := s.cfg.Provider.DoRequest(key.KeyValue, "/chat/completions", body)
 	if err != nil {
+		log.Printf("Provider request failed for key %d: %v", key.ID, err)
 		s.cfg.Pool.ReportFailure(key.ID, 0) // 0 = network error
 		writeError(w, http.StatusBadGateway, "Provider request failed")
 		return
@@ -38,7 +41,7 @@ func (s *Server) handleChatCompletions(w http.ResponseWriter, r *http.Request) {
 
 	// Handle error status codes
 	if resp.StatusCode != http.StatusOK {
-		s.cfg.Pool.ReportFailure(key.ID, resp.StatusCode)
+		log.Printf("Provider returned status %d for key %d", resp.StatusCode, key.ID)
 
 		// Try next key if available
 		if s.cfg.Pool.HealthyCount() > 0 {
