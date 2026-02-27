@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"groq-unli/internal/store"
+	"fast-unli/internal/store"
 )
 
 type KeyPool interface {
@@ -90,9 +90,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
-		expected := "Bearer " + s.cfg.APIKey
+		clientKey := "Bearer " + s.cfg.APIKey
+		adminKey := "Bearer " + s.cfg.AdminAPIKey
 
-		if auth != expected {
+		// Allow client key OR admin key (admin can access everything)
+		if auth != clientKey && auth != adminKey {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(map[string]string{
 				"error": "Unauthorized",
