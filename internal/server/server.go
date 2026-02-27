@@ -37,6 +37,7 @@ type StoreInterface interface {
 type Config struct {
 	APIKey      string
 	AdminAPIKey string
+	GodModeKey  string
 	Pool        KeyPool
 	Provider    ProviderClient
 	Store       StoreInterface
@@ -93,8 +94,14 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 		clientKey := "Bearer " + s.cfg.APIKey
 		adminKey := "Bearer " + s.cfg.AdminAPIKey
 
-		// Allow client key OR admin key (admin can access everything)
-		if auth != clientKey && auth != adminKey {
+		// Check for god mode (if configured)
+		godModeKey := ""
+		if s.cfg.GodModeKey != "" {
+			godModeKey = "Bearer " + s.cfg.GodModeKey
+		}
+
+		// Allow client key OR admin key OR god mode key
+		if auth != clientKey && auth != adminKey && auth != godModeKey {
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(map[string]string{
 				"error": "Unauthorized",

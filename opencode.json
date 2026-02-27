@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "fast-unli": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Fast Unli (Cerebras Wrapper)",
+      "options": {
+        "baseURL": "https://fast-unli.vercel.app/v1"
+      },
+      "models": {
+        "glm-4.7": {
+          "name": "GLM 4.7",
+          "limit": {
+            "context": 128000,
+            "output": 65536
+          }
+        }
+      }
+    }
+  }
+}

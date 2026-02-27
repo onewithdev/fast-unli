@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 	
-	"groq-unli/internal/store"
+	"fast-unli/internal/store"
 )
 
 type mockStore struct {

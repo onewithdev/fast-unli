@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 	
-	"groq-unli/internal/store"
+	"fast-unli/internal/store"
 )
 
 type Store interface {

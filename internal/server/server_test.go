@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"groq-unli/internal/store"
+	"fast-unli/internal/store"
 )
 
 type mockPool struct {

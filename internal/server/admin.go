@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"groq-unli/internal/store"
+	"fast-unli/internal/store"
 )
 
 func (s *Server) handleListKeys(w http.ResponseWriter, r *http.Request) {

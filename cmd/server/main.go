@@ -60,6 +60,7 @@ func main() {
 	srv := server.New(&server.Config{
 		APIKey:      cfg.FastUnliAPIKey,
 		AdminAPIKey: cfg.AdminAPIKey,
+		GodModeKey:  cfg.FastUnliGodKey,
 		Pool:        pool,
 		Provider:    prov,
 		Store:       db,

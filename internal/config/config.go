@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	FastUnliAPIKey  string
+	FastUnliGodKey  string
 	CerebrasKeys    []string
 	AdminAPIKey     string
 	Port            string
@@ -24,19 +25,20 @@ func Load() (*Config, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("FAST_UNLI_API_KEY is required")
 	}
-	
+
 	keysStr := os.Getenv("CEREBRAS_KEYS")
 	if keysStr == "" {
 		return nil, fmt.Errorf("CEREBRAS_KEYS is required")
 	}
-	
+
 	keys := strings.Split(keysStr, ",")
 	for i := range keys {
 		keys[i] = strings.TrimSpace(keys[i])
 	}
-	
+
 	cfg := &Config{
 		FastUnliAPIKey:  apiKey,
+		FastUnliGodKey:  os.Getenv("FAST_UNLI_GOD_MODE_KEY"),
 		CerebrasKeys:    keys,
 		AdminAPIKey:     os.Getenv("ADMIN_API_KEY"),
 		Port:            getEnvDefault("PORT", "8080"),
@@ -44,9 +46,9 @@ func Load() (*Config, error) {
 		MaxRetryTimeout: getDurationDefault("MAX_RETRY_TIMEOUT", 3*time.Minute),
 		CooldownMinutes: getIntDefault("COOLDOWN_MINUTES", 10),
 		SickMinutes:     getIntDefault("SICK_MINUTES", 30),
-		ProviderBaseURL: getEnvDefault("PROVIDER_BASE_URL", "https://api.cerebras.ai/v1"),
+		ProviderBaseURL: getEnvDefault("PROVIDER_BASE_URL", "https://fast-unli.vercel.app/v1"),
 	}
-	
+
 	return cfg, nil
 }
 
