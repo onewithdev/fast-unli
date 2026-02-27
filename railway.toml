@@ -1,6 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "go mod download && go build -o out ./cmd/server"
+buildCommand = "go clean -modcache && go mod download && go build -o out ./cmd/server"
 
 [deploy]
 startCommand = "./out"
