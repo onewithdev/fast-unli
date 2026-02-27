@@ -5,11 +5,11 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "Fast Unli (Cerebras Wrapper)",
       "options": {
-        "baseURL": "https://fast-unli.vercel.app/v1"
+        "baseURL": "https://fast-unli-production.up.railway.app/v1"
       },
       "models": {
-        "glm-4.7": {
-          "name": "GLM 4.7",
+        "zai-glm-4.7": {
+          "name": "zai-glm-4.7",
           "limit": {
             "context": 128000,
             "output": 65536

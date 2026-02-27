@@ -56,7 +56,7 @@ func Load() (*Config, error) {
 		MaxRetryTimeout: getDurationDefault("MAX_RETRY_TIMEOUT", 3*time.Minute),
 		CooldownMinutes: getIntDefault("COOLDOWN_MINUTES", 10),
 		SickMinutes:     getIntDefault("SICK_MINUTES", 30),
-		ProviderBaseURL: getEnvDefault("PROVIDER_BASE_URL", "https://fast-unli.vercel.app/v1"),
+		ProviderBaseURL: getEnvDefault("PROVIDER_BASE_URL", "https://api.cerebras.ai/v1"),
 	}
 
 	return cfg, nil
