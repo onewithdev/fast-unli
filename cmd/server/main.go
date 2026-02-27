@@ -9,14 +9,19 @@ import (
 	"syscall"
 	"time"
 
-	"groq-unli/internal/config"
-	"groq-unli/internal/keypool"
-	"groq-unli/internal/provider"
-	"groq-unli/internal/server"
-	"groq-unli/internal/store"
+	"github.com/joho/godotenv"
+
+	"fast-unli/internal/config"
+	"fast-unli/internal/keypool"
+	"fast-unli/internal/provider"
+	"fast-unli/internal/server"
+	"fast-unli/internal/store"
 )
 
 func main() {
+	// Auto-load .env file (like bun/node)
+	_ = godotenv.Load()
+
 	// Load config
 	cfg, err := config.Load()
 	if err != nil {
