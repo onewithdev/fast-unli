@@ -19,6 +19,23 @@ import (
 )
 
 func main() {
+	// Debug: Print environment variable status
+	log.Println("=== Environment Debug ===")
+	if apiKey := os.Getenv("FAST_UNLI_API_KEY"); apiKey == "" {
+		log.Println("FAST_UNLI_API_KEY: NOT SET")
+	} else {
+		log.Printf("FAST_UNLI_API_KEY: SET (length: %d)\n", len(apiKey))
+	}
+	if oldKey := os.Getenv("GROQ_UNLI_API_KEY"); oldKey != "" {
+		log.Printf("WARNING: Found old variable GROQ_UNLI_API_KEY - please rename to FAST_UNLI_API_KEY")
+	}
+	if keys := os.Getenv("CEREBRAS_KEYS"); keys == "" {
+		log.Println("CEREBRAS_KEYS: NOT SET")
+	} else {
+		log.Printf("CEREBRAS_KEYS: SET (length: %d)\n", len(keys))
+	}
+	log.Println("========================")
+
 	// Auto-load .env file (like bun/node)
 	_ = godotenv.Load()
 

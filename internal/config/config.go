@@ -21,14 +21,24 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
+	// Check for new variable name first, then fall back to old name
 	apiKey := os.Getenv("FAST_UNLI_API_KEY")
 	if apiKey == "" {
-		return nil, fmt.Errorf("FAST_UNLI_API_KEY is required")
+		// Try old variable name for backwards compatibility
+		apiKey = os.Getenv("GROQ_UNLI_API_KEY")
+		if apiKey == "" {
+			return nil, fmt.Errorf("FAST_UNLI_API_KEY is required (was GROQ_UNLI_API_KEY)")
+		}
 	}
 
+	// Check for new keys variable name first, then fall back to old name
 	keysStr := os.Getenv("CEREBRAS_KEYS")
 	if keysStr == "" {
-		return nil, fmt.Errorf("CEREBRAS_KEYS is required")
+		// Try old variable name for backwards compatibility
+		keysStr = os.Getenv("GROQ_KEYS")
+		if keysStr == "" {
+			return nil, fmt.Errorf("CEREBRAS_KEYS is required (was GROQ_KEYS)")
+		}
 	}
 
 	keys := strings.Split(keysStr, ",")
